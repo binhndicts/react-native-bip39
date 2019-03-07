@@ -1,20 +1,19 @@
 var unorm = require('unorm')
 var assert = require('assert')
-var pbkdf2 = require('react-native-crypto').pbkdf2Sync
 var createHash = require('react-native-crypto').createHash
 var randomBytes = require('react-native-randombytes').randomBytes
+import { NativeModules } from 'react-native';
+const { Aes } = NativeModules;
 
 var DEFAULT_WORDLIST = require('./wordlists/en.json')
 
 function mnemonicToSeed(mnemonic, password) {
-  var mnemonicBuffer = new Buffer(mnemonic, 'utf8')
-  var saltBuffer = new Buffer(salt(password), 'utf8')
-
-  return pbkdf2(mnemonicBuffer, saltBuffer, 2048, 64, 'sha512')
+  return Aes.pbkdf2(mnemonic, salt(password), 2048, 64 * 8)
 }
 
-function mnemonicToSeedHex(mnemonic, password) {
-  return mnemonicToSeed(mnemonic, password).toString('hex')
+async function mnemonicToSeedHex(mnemonic, password) {
+  var seed = await mnemonicToSeed(mnemonic, password)
+  return seed;
 }
 
 function mnemonicToEntropy(mnemonic, wordlist) {
